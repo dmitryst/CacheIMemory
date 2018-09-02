@@ -43,5 +43,25 @@ namespace CacheInMemoryAspNetCoreWeb.Controllers
             var cacheEntry = _cache.Get<DateTime?>(CacheKeys.Entry);
             return View("Cache", cacheEntry);
         }
+
+        public IActionResult CacheGetOrCreate()
+        {
+            var cacheEntry = _cache.GetOrCreate(CacheKeys.Entry, entry => {
+                entry.SlidingExpiration = TimeSpan.FromSeconds(5);
+                return DateTime.Now;
+            });
+
+            return View("Cache", cacheEntry);
+        }
+
+        public async Task<IActionResult> CacheGetOrCreateAsync()
+        {
+            var cacheEntry = await _cache.GetOrCreateAsync(CacheKeys.Entry, entry => {
+                entry.SlidingExpiration = TimeSpan.FromSeconds(5);
+                return Task.FromResult(DateTime.Now);
+            });
+
+            return View("Cache", cacheEntry);
+        }
     }
 }

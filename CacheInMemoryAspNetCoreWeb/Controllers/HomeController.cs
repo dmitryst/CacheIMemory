@@ -36,5 +36,12 @@ namespace CacheInMemoryAspNetCoreWeb.Controllers
 
             return View("Cache", cacheEntry);
         }
+
+        public IActionResult CacheGet()
+        {
+            // fetch the cached time
+            var cacheEntry = _cache.Get<DateTime?>(CacheKeys.Entry);
+            return View("Cache", cacheEntry);
+        }
     }
 }

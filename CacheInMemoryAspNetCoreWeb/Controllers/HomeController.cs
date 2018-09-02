@@ -63,5 +63,11 @@ namespace CacheInMemoryAspNetCoreWeb.Controllers
 
             return View("Cache", cacheEntry);
         }
+
+        public IActionResult CacheRemove()
+        {
+            _cache.Remove(CacheKeys.Entry);
+            return RedirectToAction("CacheGet");
+        }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CacheInMemoryAspNetCoreWeb.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -46,7 +47,8 @@ namespace CacheInMemoryAspNetCoreWeb.Controllers
 
         public IActionResult CacheGetOrCreate()
         {
-            var cacheEntry = _cache.GetOrCreate(CacheKeys.Entry, entry => {
+            var cacheEntry = _cache.GetOrCreate(CacheKeys.Entry, entry =>
+            {
                 entry.SlidingExpiration = TimeSpan.FromSeconds(5);
                 return DateTime.Now;
             });
@@ -56,7 +58,8 @@ namespace CacheInMemoryAspNetCoreWeb.Controllers
 
         public async Task<IActionResult> CacheGetOrCreateAsync()
         {
-            var cacheEntry = await _cache.GetOrCreateAsync(CacheKeys.Entry, entry => {
+            var cacheEntry = await _cache.GetOrCreateAsync(CacheKeys.Entry, entry =>
+            {
                 entry.SlidingExpiration = TimeSpan.FromSeconds(5);
                 return Task.FromResult(DateTime.Now);
             });
@@ -68,6 +71,47 @@ namespace CacheInMemoryAspNetCoreWeb.Controllers
         {
             _cache.Remove(CacheKeys.Entry);
             return RedirectToAction("CacheGet");
+        }
+
+        //--------------------------------------
+
+        public IActionResult GetCallbackView()
+        {
+            return View("Callback");
+        }
+
+        public IActionResult CreateCallbackEntry()
+        {
+            var cacheEntryOptions = new MemoryCacheEntryOptions()
+                // pin to cache
+                .SetPriority(CacheItemPriority.NeverRemove)
+                // add eviction callback
+                .RegisterPostEvictionCallback(callback: EvictionCallback, state: this);
+
+            _cache.Set(CacheKeys.CallbackEntry, DateTime.Now, cacheEntryOptions);
+
+            return RedirectToAction("GetCallbackEntry");
+        }
+
+        public IActionResult GetCallbackEntry()
+        {
+            return View("Callback", new CallbackViewModel
+            {
+                CachedTime = _cache.Get<DateTime?>(CacheKeys.CallbackEntry),
+                Message = _cache.Get<string>(CacheKeys.CallbackMessage)
+            });
+        }
+
+        public IActionResult RemoveCallbackEntry()
+        {
+            _cache.Remove(CacheKeys.CallbackEntry);
+            return RedirectToAction("GetCallbackEntry");
+        }
+
+        private static void EvictionCallback(object key, object value, EvictionReason reason, object state)
+        {
+            var msg = $"Entry was evicted. Reason: {reason}";
+            ((HomeController)state)._cache.Set(CacheKeys.CallbackMessage, msg);
         }
     }
 }

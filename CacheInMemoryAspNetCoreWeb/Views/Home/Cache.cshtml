@@ -16,3 +16,6 @@
 
 <h3>Current Time: @DateTime.Now.TimeOfDay.ToString()</h3>
 <h3>Cached Time: @(Model == null ? "No cached entry found" : Model.Value.TimeOfDay.ToString())</h3>
+
+<br/><br/>
+<a asp-controller="Home" asp-action="GetCallbackView">Get callback view</a>
